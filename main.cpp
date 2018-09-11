@@ -35,43 +35,48 @@ int main(int argc, char** argv)
                 uint32_t* pixels = ((Uint32 *) (gScreenSurface->pixels));
 
 
-                int framecount = 0;
+                unsigned int framecount = 0;
                 uint64_t NOW = SDL_GetPerformanceCounter();
                 uint64_t LAST = 0;
 
-                unsigned int timer = 0;
+		unsigned int width = gScreenSurface->w;
+		unsigned int height = gScreenSurface->h;
+		unsigned int beginNextRow = width;
+		unsigned int fieldCount = width*height;
+
                 // Main Loop
                 while( !quit )
                 {
-                    // Handle user input
-                    if( SDL_PollEvent( &e ) != 0 && (SDL_QUIT == e.type || (SDL_KEYDOWN == e.type && SDLK_q == e.key.keysym.sym) ))
-                    {
-                        quit = true;
+                    // FPS counter
+	            framecount++;
+		    // Handle user input
+                    if( SDL_PollEvent( &e ) != 0)
+		    {
+                        if ((SDL_QUIT == e.type || (SDL_KEYDOWN == e.type && SDLK_q == e.key.keysym.sym) ))
+			{
+                            quit = true;
+			}
+
+			if (SDL_KEYDOWN == e.type)
+			{
+                        // FPS output
+                            LAST = NOW;
+                            NOW = SDL_GetPerformanceCounter();
+                            printf( "FPS: %f\n", framecount/(double)((NOW - LAST) / (double)SDL_GetPerformanceFrequency() ));
+                            framecount = 0;
+			}
                     }
 
-                    // FPS counter
-                    if (framecount++ > 100)
-                    {
-                        LAST = NOW;
-                        NOW = SDL_GetPerformanceCounter();
-                        printf( "FPS: %f\n" , 100000.0/(double)((NOW - LAST)*1000 / (double)SDL_GetPerformanceFrequency() ));
-                        framecount = 0;
-                    }
 
                     // Fill Surface
-                    for (unsigned int y = 0; y < gScreenSurface->h; y++)
+                    for (unsigned int offset = 0; offset < fieldCount; offset=beginNextRow)
                     {
-                        unsigned int index0 = y * gScreenSurface->w;
-                        for (unsigned int x = 0; x < gScreenSurface->w; x++)
+			beginNextRow = offset+width;
+                        for (unsigned int i = offset; i < beginNextRow; i++)
                         {
-                            uint32_t newPixel = 0xFF000000;            // Gamma
-                            newPixel |= ((x-timer)&0xFF) << 16 ;       // R
-                            newPixel |= ((y+timer)&0xFF) << 8 ;        // G
-                            newPixel |= (timer & 0xFF);                // B
-                            pixels[index0+x] = newPixel;
-                        }
+                            pixels[i] = (0xFF000000 | ((framecount & 0xFF) << 16) /*R*/ | ((framecount & 0xFF) << 8) /*G*/ | (framecount & 0xFF) /*B*/); 
+			}
                     }
-		    timer++;
                     //Update the surface
                     SDL_UpdateWindowSurface( gWindow );
                 }
