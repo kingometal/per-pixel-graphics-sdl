@@ -1,7 +1,7 @@
 EXECUTABLE=per-pixel-graphics.x
 OUTDIR = build
 FLAGS = -std=c++11 -lSDL2
-GCC = c++
+GCC = g++
 
 
 all: directories $(EXECUTABLE)

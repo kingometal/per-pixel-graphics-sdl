@@ -1,5 +1,4 @@
 #include <SDL2/SDL.h>
-#include <iostream>
 
 const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT = 600;
@@ -12,7 +11,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        SDL_Window* gWindow = SDL_CreateWindow( "Ising Model", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+        SDL_Window* gWindow = SDL_CreateWindow( "Simple lightweight per-pixel drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
         if( gWindow == NULL )
         {
             printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
@@ -39,9 +38,8 @@ int main(int argc, char** argv)
                 int framecount = 0;
                 uint64_t NOW = SDL_GetPerformanceCounter();
                 uint64_t LAST = 0;
-                double deltaTime = 0;
 
-                int timer = 0;
+                unsigned int timer = 0;
                 // Main Loop
                 while( !quit )
                 {
@@ -56,26 +54,24 @@ int main(int argc, char** argv)
                     {
                         LAST = NOW;
                         NOW = SDL_GetPerformanceCounter();
-                        deltaTime = (double)((NOW - LAST)*1000 / (double)SDL_GetPerformanceFrequency() );
-                        std::cout << "fps: " << 100000.0/(deltaTime) << std::endl;
+                        printf( "FPS: %f\n" , 100000.0/(double)((NOW - LAST)*1000 / (double)SDL_GetPerformanceFrequency() ));
                         framecount = 0;
                     }
 
                     // Fill Surface
-                    for (int y = 0; y < gScreenSurface->h; y++)
+                    for (unsigned int y = 0; y < gScreenSurface->h; y++)
                     {
-                        int index0 = y * gScreenSurface->w;
-                        for (int x = 0; x < gScreenSurface->w; x++)
+                        unsigned int index0 = y * gScreenSurface->w;
+                        for (unsigned int x = 0; x < gScreenSurface->w; x++)
                         {
-                            uint32_t newPixel = (timer & 0xFF); // B
-                            newPixel |= (x+timer) << 8 ;        //G
-                            newPixel |= (y+timer) << 16 ;       //R
-                            newPixel |= 0xFF000000 ;            //Gamma
+                            uint32_t newPixel = 0xFF000000;            // Gamma
+                            newPixel |= ((x-timer)&0xFF) << 16 ;       // R
+                            newPixel |= ((y+timer)&0xFF) << 8 ;        // G
+                            newPixel |= (timer & 0xFF);                // B
                             pixels[index0+x] = newPixel;
                         }
                     }
-                    timer++;
-
+		    timer++;
                     //Update the surface
                     SDL_UpdateWindowSurface( gWindow );
                 }
