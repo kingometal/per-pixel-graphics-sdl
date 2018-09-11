@@ -2,8 +2,9 @@
 
 const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT = 600;
+const int MAX_FPS = 30;
 
-int main(int argc, char** argv) 
+void run()
 {
     if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
     {
@@ -37,7 +38,10 @@ int main(int argc, char** argv)
 
                 unsigned int framecount = 0;
                 uint64_t NOW = SDL_GetPerformanceCounter();
+                uint64_t currentFrameOutputTime = SDL_GetPerformanceCounter();
+                uint64_t lastFrameOutputTime = currentFrameOutputTime;
                 uint64_t LAST = 0;
+		double min_frame_time = 1.0/(double)MAX_FPS;
 
 		unsigned int width = gScreenSurface->w;
 		unsigned int height = gScreenSurface->h;
@@ -48,7 +52,7 @@ int main(int argc, char** argv)
                 while( !quit )
                 {
                     // FPS counter
-	            framecount++;
+//	            framecount++;
 		    // Handle user input
                     if( SDL_PollEvent( &e ) != 0)
 		    {
@@ -67,18 +71,24 @@ int main(int argc, char** argv)
 			}
                     }
 
-
                     // Fill Surface
                     for (unsigned int offset = 0; offset < fieldCount; offset=beginNextRow)
                     {
 			beginNextRow = offset+width;
                         for (unsigned int i = offset; i < beginNextRow; i++)
                         {
-                            pixels[i] = (0xFF000000 | ((framecount & 0xFF) << 16) /*R*/ | ((framecount & 0xFF) << 8) /*G*/ | (framecount & 0xFF) /*B*/); 
+                            pixels[i] = (0xFF000000 | ((offset & 0xFF) << 16) /*R*/ | ((framecount & 0xFF) << 8) /*G*/ | ((i+framecount) & 0xFF) /*B*/); 
 			}
                     }
-                    //Update the surface
-                    SDL_UpdateWindowSurface( gWindow );
+                    //Update the surface, but not more often than the maximum frames per seconds (FPS)
+                    currentFrameOutputTime = SDL_GetPerformanceCounter();
+		    if ((double)(currentFrameOutputTime-lastFrameOutputTime)/(double) SDL_GetPerformanceFrequency() > min_frame_time)
+		    {
+                        SDL_UpdateWindowSurface( gWindow );
+//                        printf( "update duration: %f ms\n", (double) (SDL_GetPerformanceCounter() - currentFrameOutputTime)*1000.0 / (double)SDL_GetPerformanceFrequency() );
+                        lastFrameOutputTime = currentFrameOutputTime;
+	                framecount++;
+		    }
                 }
 
                 SDL_FreeSurface( gScreenSurface );
@@ -89,5 +99,10 @@ int main(int argc, char** argv)
         }
         SDL_Quit();
     }
+}
+
+int main(int argc, char** argv) 
+{
+    run();
     return 0;
 }
