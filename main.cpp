@@ -1,10 +1,10 @@
 #include <SDL2/SDL.h>
 
-const int SCREEN_WIDTH = 600;
-const int SCREEN_HEIGHT = 600;
-const int MAX_FPS = 30;
+const unsigned int SCREEN_WIDTH = 600;
+const unsigned int SCREEN_HEIGHT = 600;
+const unsigned int MAX_FPS = 30;
 
-void run()
+void run(unsigned int width, unsigned int height, unsigned int maxFPS)
 {
     if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
     {
@@ -12,7 +12,7 @@ void run()
     }
     else
     {
-        SDL_Window* gWindow = SDL_CreateWindow( "Simple lightweight per-pixel drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+        SDL_Window* gWindow = SDL_CreateWindow( "Simple lightweight per-pixel drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
         if( gWindow == NULL )
         {
             printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
@@ -37,10 +37,7 @@ void run()
                 uint64_t LAST = NOW;
                 uint64_t currentFrameOutputTime = SDL_GetPerformanceCounter();
                 uint64_t lastFrameOutputTime = currentFrameOutputTime;
-		double min_frame_time = 1.0/(double)MAX_FPS;
-
-		unsigned int width = SCREEN_WIDTH;
-		unsigned int height = SCREEN_HEIGHT;
+		double min_frame_time = 1.0/(double)maxFPS;
 
                 // Main Loop
                 while( !quit )
@@ -94,6 +91,6 @@ void run()
 
 int main(int argc, char** argv) 
 {
-    run();
+    run(SCREEN_WIDTH, SCREEN_HEIGHT, MAX_FPS);
     return 0;
 }
