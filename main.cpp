@@ -3,9 +3,8 @@
 
 const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT = 600;
-const unsigned int MAX_FPS = 30;
 
-void run(int width, int height, unsigned int maxFPS)
+void run(int width, int height)
 {
     if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
     {
@@ -34,16 +33,14 @@ void run(int width, int height, unsigned int maxFPS)
                 SDL_Event e;
 
                 unsigned int framecount = 0;
-                double min_frame_time = 1.0/(double)maxFPS;
-
                 double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
-                double lastFrameOutputTime = secondsCounter;
                 double lastFPSOutputTime = secondsCounter;
 
                 // Main Loop
                 while( !quit )
                 {
                     secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
+                    ++framecount;
                     // Handle user input
                     if( SDL_PollEvent( &e ) != 0)
                     {
@@ -79,13 +76,7 @@ void run(int width, int height, unsigned int maxFPS)
                         }
                     }
                     //Update the window, but not more often than the maximum frames per seconds (FPS)
-                    if ((secondsCounter-lastFrameOutputTime) > min_frame_time)
-                    {
-                        SDL_RenderPresent(renderer);
-                        //                        printf( "update duration: %f ms\n", (double) (SDL_GetPerformanceCounter() - currentFrameOutputTime)*1000.0 / (double)SDL_GetPerformanceFrequency() );
-                        lastFrameOutputTime = secondsCounter;
-                        framecount++;
-                    }
+                    SDL_RenderPresent(renderer);
                 } // End main loop
                 SDL_DestroyRenderer(renderer);
                 renderer = NULL;
@@ -99,6 +90,6 @@ void run(int width, int height, unsigned int maxFPS)
 
 int main(int argc, char** argv) 
 {
-    run(SCREEN_WIDTH, SCREEN_HEIGHT, MAX_FPS);
+    run(SCREEN_WIDTH, SCREEN_HEIGHT);
     return 0;
 }
