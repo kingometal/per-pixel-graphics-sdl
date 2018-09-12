@@ -19,8 +19,8 @@ void run(unsigned int width, unsigned int height, unsigned int maxFPS)
         }
         else
         {
-//            SDL_Renderer* renderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
-	    SDL_Renderer* renderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_SOFTWARE);
+            //            SDL_Renderer* renderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+            SDL_Renderer* renderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_SOFTWARE);
             if (NULL == renderer)
             {
                 printf( "Can not get surface! SDL_Error: %s\n", SDL_GetError() );
@@ -37,27 +37,27 @@ void run(unsigned int width, unsigned int height, unsigned int maxFPS)
                 uint64_t LAST = NOW;
                 uint64_t currentFrameOutputTime = SDL_GetPerformanceCounter();
                 uint64_t lastFrameOutputTime = currentFrameOutputTime;
-		double min_frame_time = 1.0/(double)maxFPS;
+                double min_frame_time = 1.0/(double)maxFPS;
 
                 // Main Loop
                 while( !quit )
                 {
-		    // Handle user input
+                    // Handle user input
                     if( SDL_PollEvent( &e ) != 0)
-		    {
+                    {
                         if ((SDL_QUIT == e.type || (SDL_KEYDOWN == e.type && SDLK_q == e.key.keysym.sym) ))
-			{
+                        {
                             quit = true;
-			}
+                        }
 
-			if (SDL_KEYDOWN == e.type)
-			{
-                        // FPS output
+                        if (SDL_KEYDOWN == e.type)
+                        {
+                            // FPS output
                             LAST = NOW;
                             NOW = SDL_GetPerformanceCounter();
                             printf( "FPS: %f\n", framecount/(double)((NOW - LAST) / (double)SDL_GetPerformanceFrequency() ));
                             framecount = 0;
-			}
+                        }
                     }
 
                     // Fill Surface
@@ -65,22 +65,22 @@ void run(unsigned int width, unsigned int height, unsigned int maxFPS)
                     {
                         for (unsigned int y = 0; y < height; y++)
                         {
-			    SDL_SetRenderDrawColor(renderer, (framecount)%255, (y+framecount)%255, (x+framecount)%255, 255);
-			    SDL_RenderDrawPoint(renderer, x, y);
-			}
+                            SDL_SetRenderDrawColor(renderer, (framecount)%255, (y+framecount)%255, (x+framecount)%255, 255);
+                            SDL_RenderDrawPoint(renderer, x, y);
+                        }
                     }
                     //Update the window, but not more often than the maximum frames per seconds (FPS)
                     currentFrameOutputTime = SDL_GetPerformanceCounter();
-		    if ((double)(currentFrameOutputTime-lastFrameOutputTime)/(double) SDL_GetPerformanceFrequency() > min_frame_time)
-		    {
+                    if ((double)(currentFrameOutputTime-lastFrameOutputTime)/(double) SDL_GetPerformanceFrequency() > min_frame_time)
+                    {
                         SDL_RenderPresent(renderer);
-//                        printf( "update duration: %f ms\n", (double) (SDL_GetPerformanceCounter() - currentFrameOutputTime)*1000.0 / (double)SDL_GetPerformanceFrequency() );
+                        //                        printf( "update duration: %f ms\n", (double) (SDL_GetPerformanceCounter() - currentFrameOutputTime)*1000.0 / (double)SDL_GetPerformanceFrequency() );
                         lastFrameOutputTime = currentFrameOutputTime;
-	                framecount++;
-		    }
+                        framecount++;
+                    }
                 } // End main loop
-		SDL_DestroyRenderer(renderer);
-		renderer = NULL;
+                SDL_DestroyRenderer(renderer);
+                renderer = NULL;
             }
             SDL_DestroyWindow( gWindow );
             gWindow = NULL;
