@@ -1,6 +1,6 @@
 EXECUTABLE=per-pixel-graphics.x
 OUTDIR = build
-FLAGS = -std=c++11 -lSDL2
+FLAGS = -std=c++11 -lSDL2 -lSDL2_ttf
 GCC = g++
 
 
