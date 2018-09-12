@@ -12,16 +12,16 @@ void run()
     }
     else
     {
-        SDL_Window* gWindow = SDL_CreateWindow( "Simple lightweight per-pixel drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+        SDL_Window* gWindow = SDL_CreateWindow( "Simple lightweight per-pixel drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
         if( gWindow == NULL )
         {
             printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
         }
         else
         {
-            SDL_Surface* gScreenSurface = SDL_GetWindowSurface( gWindow );
-
-            if (NULL == gScreenSurface)
+//            SDL_Renderer* renderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+	    SDL_Renderer* renderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_SOFTWARE);
+            if (NULL == renderer)
             {
                 printf( "Can not get surface! SDL_Error: %s\n", SDL_GetError() );
             }
@@ -32,27 +32,19 @@ void run()
                 //Event handler
                 SDL_Event e;
 
-                // array of pixels we will manipulate
-                uint32_t* pixels = ((Uint32 *) (gScreenSurface->pixels));
-
-
                 unsigned int framecount = 0;
                 uint64_t NOW = SDL_GetPerformanceCounter();
+                uint64_t LAST = NOW;
                 uint64_t currentFrameOutputTime = SDL_GetPerformanceCounter();
                 uint64_t lastFrameOutputTime = currentFrameOutputTime;
-                uint64_t LAST = 0;
 		double min_frame_time = 1.0/(double)MAX_FPS;
 
-		unsigned int width = gScreenSurface->w;
-		unsigned int height = gScreenSurface->h;
-		unsigned int beginNextRow = width;
-		unsigned int fieldCount = width*height;
+		unsigned int width = SCREEN_WIDTH;
+		unsigned int height = SCREEN_HEIGHT;
 
                 // Main Loop
                 while( !quit )
                 {
-                    // FPS counter
-//	            framecount++;
 		    // Handle user input
                     if( SDL_PollEvent( &e ) != 0)
 		    {
@@ -72,27 +64,26 @@ void run()
                     }
 
                     // Fill Surface
-                    for (unsigned int offset = 0; offset < fieldCount; offset=beginNextRow)
+                    for (unsigned int x = 0; x < width; x++)
                     {
-			beginNextRow = offset+width;
-                        for (unsigned int i = offset; i < beginNextRow; i++)
+                        for (unsigned int y = 0; y < height; y++)
                         {
-                            pixels[i] = (0xFF000000 | ((offset & 0xFF) << 16) /*R*/ | ((framecount & 0xFF) << 8) /*G*/ | ((i+framecount) & 0xFF) /*B*/); 
+			    SDL_SetRenderDrawColor(renderer, (framecount)%255, (y+framecount)%255, (x+framecount)%255, 255);
+			    SDL_RenderDrawPoint(renderer, x, y);
 			}
                     }
-                    //Update the surface, but not more often than the maximum frames per seconds (FPS)
+                    //Update the window, but not more often than the maximum frames per seconds (FPS)
                     currentFrameOutputTime = SDL_GetPerformanceCounter();
 		    if ((double)(currentFrameOutputTime-lastFrameOutputTime)/(double) SDL_GetPerformanceFrequency() > min_frame_time)
 		    {
-                        SDL_UpdateWindowSurface( gWindow );
+                        SDL_RenderPresent(renderer);
 //                        printf( "update duration: %f ms\n", (double) (SDL_GetPerformanceCounter() - currentFrameOutputTime)*1000.0 / (double)SDL_GetPerformanceFrequency() );
                         lastFrameOutputTime = currentFrameOutputTime;
 	                framecount++;
 		    }
-                }
-
-                SDL_FreeSurface( gScreenSurface );
-                gScreenSurface = NULL;
+                } // End main loop
+		SDL_DestroyRenderer(renderer);
+		renderer = NULL;
             }
             SDL_DestroyWindow( gWindow );
             gWindow = NULL;
