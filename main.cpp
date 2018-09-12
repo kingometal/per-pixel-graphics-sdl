@@ -35,14 +35,13 @@ void run(int width, int height)
                 unsigned int framecount = 0;
                 double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
                 double lastFPSOutputTime = secondsCounter;
-
                 // Main Loop
                 while( !quit )
                 {
                     secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
                     ++framecount;
                     // Handle user input
-                    if( SDL_PollEvent( &e ) != 0)
+                    while( SDL_PollEvent( &e ) != 0)
                     {
                         if ((SDL_QUIT == e.type || (SDL_KEYDOWN == e.type && SDLK_q == e.key.keysym.sym) ))
                         {
@@ -50,8 +49,6 @@ void run(int width, int height)
                         }
                         else if (SDL_WINDOWEVENT == e.type && e.window.event == SDL_WINDOWEVENT_RESIZED)
                         {
-                                SDL_DestroyRenderer(renderer);
-                                renderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_SOFTWARE);
                                 SDL_GetWindowSize(gWindow, &width, &height);
                                 std::cout << "width :"  << width << "height: " << height << std::endl;
 
@@ -65,7 +62,6 @@ void run(int width, int height)
                             framecount = 0;
                         }
                     }
-
                     // Fill Surface
                     for (unsigned int x = 0; x < width; x++)
                     {
