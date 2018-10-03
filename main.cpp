@@ -5,7 +5,7 @@ const int SCREEN_HEIGHT = 600;
 
 int main(int argc, char** argv)
 {
-    MyGraphicsOutput::View myView(SCREEN_WIDTH, SCREEN_HEIGHT);
-    myView.Start();
+    MyGraphicsOutput::View myView;
+    myView.Start(SCREEN_WIDTH, SCREEN_HEIGHT);
     return 0;
 }

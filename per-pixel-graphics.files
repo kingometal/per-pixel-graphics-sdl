@@ -3,4 +3,10 @@ View.h
 ViewBuffer.cpp
 ViewBuffer.h
 bufferstate.h
+drawjob.cpp
+drawjob.h
+filljob.cpp
+filljob.h
+idrawbuffer.h
+ifillbuffer.h
 main.cpp

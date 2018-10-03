@@ -6,12 +6,9 @@ namespace MyGraphicsOutput
 class View
 {
 public:
-    View(int width, int height);
+    View();
     ~View();
-    void Start();
-private:
-    int W;
-    int H;
+    void Start(int initialWidth, int initialHeight);
 };
 }
 

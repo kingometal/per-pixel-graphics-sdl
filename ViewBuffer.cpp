@@ -1,27 +1,58 @@
 #include "ViewBuffer.h"
+#include "idrawbuffer.h"
+#include "ifillbuffer.h"
+
 #include <stdlib.h>
 #include <iostream>
 
 using namespace MyGraphicsOutput;
 using namespace std;
 
-ViewBuffer::ViewBuffer(int width, int height)
+namespace MyGraphicsOutput{
+class ViewBufferImpl: public IDrawBuffer, public IFillBuffer
+{
+public:
+    ViewBufferImpl(int width, int height);
+    ~ViewBufferImpl();
+
+    void Resize(int width, int height);
+    bool GetBufferToDraw(RGBpixel** target);
+    void MarkBufferDrawn(RGBpixel** buffer);
+    bool GetBufferToFill(RGBpixel** target);
+    void MarkBufferFilled(RGBpixel** buffer);
+    bool QuitRequested();
+    void RequestQuit();
+    bool WaitToFillBothBuffers();
+    int GetWidth();
+    int GetHeight();
+
+    int Width;
+    int Height;
+    bool Quit;
+    int PixelCount;
+    RGBpixel* PixelDataBuffer1;
+    RGBpixel* PixelDataBuffer2;
+    BufferState FirstPartState = DRAWN;
+    BufferState SecondPartState = DRAWN;
+};
+}
+
+ViewBufferImpl::ViewBufferImpl(int width, int height)
     : Width(width)
     , Height(height)
     , PixelCount(width*height)
     , PixelDataBuffer1((RGBpixel*) malloc((int) sizeof(RGBpixel)*PixelCount))
     , PixelDataBuffer2((RGBpixel*) malloc((int) sizeof(RGBpixel)*PixelCount))
     , Quit(false)
-    , StartLog(false)
 {
 }
 
-ViewBuffer::~ViewBuffer()
+ViewBufferImpl::~ViewBufferImpl()
 {
 
 }
 
-void ViewBuffer::Resize(int width, int height)
+void ViewBufferImpl::Resize(int width, int height)
 {
     delete PixelDataBuffer2;
     PixelDataBuffer2 = NULL;
@@ -41,16 +72,12 @@ void ViewBuffer::Resize(int width, int height)
         PixelDataBuffer2[i].g = 0;
         PixelDataBuffer2[i].b = 0;
     }
-    if (StartLog) cout << "releasing first part" << endl;
     FirstPartState = DRAWN;
-    if (StartLog) cout << "releasing second part" << endl;
     SecondPartState = DRAWN;
-    if (StartLog) cout << "released both parts" << endl;
 }
 
-bool ViewBuffer::GetBufferToDraw(MyGraphicsOutput::RGBpixel **target)
+bool ViewBufferImpl::GetBufferToDraw(MyGraphicsOutput::RGBpixel **target)
 {
-    if (StartLog) cout << "GetBufferToDraw started" << endl;
     bool success = false;
     if (target != NULL)
     {
@@ -59,53 +86,45 @@ bool ViewBuffer::GetBufferToDraw(MyGraphicsOutput::RGBpixel **target)
             *target = PixelDataBuffer1;
             FirstPartState = DRAWING;
             success = true;
-            if (StartLog) cout << "draw the first part" << " w " << Width << " h " << Height << endl;
         }
         else if (SecondPartState == FILLED_NOT_DRAWN)
         {
             *target = PixelDataBuffer2;
             SecondPartState = DRAWING;
             success = true;
-            if (StartLog) cout << "draw the second part" << " w " << Width << " h " << Height << endl;
         }
         else
         {
             *target = NULL;
         }
     }
-    if (StartLog) cout << "GetBufferToDraw finished" << endl;
     return success;
 }
 
-void ViewBuffer::MarkBufferDrawn(MyGraphicsOutput::RGBpixel **buffer)
+void ViewBufferImpl::MarkBufferDrawn(MyGraphicsOutput::RGBpixel **buffer)
 {
     if (*buffer == PixelDataBuffer1)
     {
-       if (StartLog) cout << "finish draw the first part" << endl;
        FirstPartState = DRAWN;
     }
     else
     {
-        if (StartLog) cout << "finish draw the second part" << endl;
         SecondPartState = DRAWN;
     }
 }
 
-bool ViewBuffer::GetBufferToFill(MyGraphicsOutput::RGBpixel **target)
+bool ViewBufferImpl::GetBufferToFill(MyGraphicsOutput::RGBpixel **target)
 {
-//    if (StartLog) cout << "GetBufferToFill started" << endl;
     bool success = false;
 
     if (FirstPartState == DRAWN)
     {
-        if (StartLog) cout << "fill the first part" << endl;
         *target = PixelDataBuffer1;
         FirstPartState = FILLING;
         success = true;
     }
     else if (SecondPartState == DRAWN)
     {
-        if (StartLog) cout << "fill the second part" << endl;
         *target = PixelDataBuffer2;
         SecondPartState = FILLING;
         success = true;
@@ -114,53 +133,70 @@ bool ViewBuffer::GetBufferToFill(MyGraphicsOutput::RGBpixel **target)
     {
         *target = NULL;
     }
-    if (StartLog && success) cout << "Got Buffer To Fill" << endl;
     return success;
 }
 
-void ViewBuffer::MarkBufferFilled(MyGraphicsOutput::RGBpixel **buffer)
+void ViewBufferImpl::MarkBufferFilled(MyGraphicsOutput::RGBpixel **buffer)
 {
     if (*buffer == PixelDataBuffer2)
     {
-        if (StartLog) cout << "finish fill the second part" << endl;
         SecondPartState = FILLED_NOT_DRAWN;
     }
     else
     {
-       if (StartLog) cout << "finish fill the first part" << endl;
        FirstPartState = FILLED_NOT_DRAWN;
     }
 }
 
-bool ViewBuffer::QuitRequested()
+bool ViewBufferImpl::QuitRequested()
 {
     return Quit;
 }
 
-void ViewBuffer::RequestQuit()
+void ViewBufferImpl::RequestQuit()
 {
     Quit = true;
 }
 
-bool ViewBuffer::WaitToFillBothBuffers()
+bool ViewBufferImpl::WaitToFillBothBuffers()
 {
-    if (StartLog) cout << "WaitToFillBothBuffers started" << endl;
     while (true)
     {
         if (FirstPartState == FILLED_NOT_DRAWN && SecondPartState == FILLED_NOT_DRAWN)
             break;
     }
-    if (StartLog) cout << "WaitToFillBothBuffers finished" << endl;
     FirstPartState = HOLD;
     SecondPartState = HOLD;
 }
 
-int ViewBuffer::GetWidth()
+int ViewBufferImpl::GetWidth()
 {
     return Width;
 }
 
-int ViewBuffer::GetHeight()
+int ViewBufferImpl::GetHeight()
 {
     return Height;
+}
+
+ViewBuffer::ViewBuffer(int width, int height)
+    : pimpl(new ViewBufferImpl(width, height))
+{
+
+}
+
+ViewBuffer::~ViewBuffer()
+{
+    delete pimpl;
+    pimpl = NULL;
+}
+
+IDrawBuffer &ViewBuffer::GetDrawBuffer()
+{
+    return *pimpl;
+}
+
+IFillBuffer &ViewBuffer::GetFillBuffer()
+{
+    return *pimpl;
 }
