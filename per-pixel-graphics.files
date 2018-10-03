@@ -1,1 +1,6 @@
+View.cpp
+View.h
+ViewBuffer.cpp
+ViewBuffer.h
+bufferstate.h
 main.cpp

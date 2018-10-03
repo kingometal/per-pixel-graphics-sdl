@@ -8,7 +8,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends li
 RUN rm -rf /var/lib/apt/lists/*  # clean up apt-get cache
 COPY *.cpp /
 COPY FreeMono.ttf /
-#COPY *.h /
+COPY *.h /
 COPY Makefile /
 CMD make run
 

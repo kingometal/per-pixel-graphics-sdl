@@ -7,11 +7,17 @@ GCC = g++
 all: directories $(EXECUTABLE)
 
 
-$(EXECUTABLE): $(OUTDIR)/main.o
-	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(FLAGS)
+$(EXECUTABLE): $(OUTDIR)/ViewBuffer.o $(OUTDIR)/View.o $(OUTDIR)/main.o
+	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(OUTDIR)/View.o $(OUTDIR)/ViewBuffer.o $(FLAGS)
 
-$(OUTDIR)/main.o: main.cpp
+$(OUTDIR)/main.o: main.cpp  $(OUTDIR)/View.o View.h bufferstate.h
 	$(GCC) $(FLAGS) -c main.cpp -o $(OUTDIR)/main.o
+
+$(OUTDIR)/View.o: View.cpp View.h  $(OUTDIR)/ViewBuffer.o 
+	$(GCC) $(FLAGS) -c View.cpp -o $(OUTDIR)/View.o
+
+$(OUTDIR)/ViewBuffer.o: ViewBuffer.cpp ViewBuffer.h bufferstate.h
+	$(GCC) $(FLAGS) -c ViewBuffer.cpp -o $(OUTDIR)/ViewBuffer.o
 
 directories: $(OUTDIR)
 
