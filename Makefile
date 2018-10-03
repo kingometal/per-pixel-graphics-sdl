@@ -1,6 +1,7 @@
 EXECUTABLE=per-pixel-graphics.x
 OUTDIR = build
-FLAGS = -std=c++11 -lSDL2 -lSDL2_ttf
+LIBRARY = per-pixel-graphics-view
+FLAGS = -std=c++11 -lSDL2 -lSDL2_ttf -fPIC
 GCC = g++
 
 
@@ -30,11 +31,31 @@ directories: $(OUTDIR)
 $(OUTDIR):
 	mkdir -p $(OUTDIR)
 
+
+
 clean: 
-	rm -rf $(OUTDIR)
-	rm $(EXECUTABLE)
+	if [ -d $(OUTDIR) ]; then rm -rf $(OUTDIR); fi
+	if [ -e $(EXECUTABLE) ]; then rm $(EXECUTABLE); fi
+	if [ -e lib$(LIBRARY).a ]; then rm lib$(LIBRARY).a; fi
 
 
-
-run: all
+run: exe-stat FreeMono.ttf
 	./$(EXECUTABLE)
+
+lib-stat: directories $(OUTDIR)/DrawJob.o $(OUTDIR)/FillJob.o $(OUTDIR)/ViewBuffer.o $(OUTDIR)/View.o
+	ar rcs lib$(LIBRARY).a $(OUTDIR)/DrawJob.o $(OUTDIR)/FillJob.o $(OUTDIR)/ViewBuffer.o $(OUTDIR)/View.o
+
+exe-stat: lib-stat $(OUTDIR)/main.o
+	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o -l$(LIBRARY) -L. $(FLAGS) 
+	rm $(OUTDIR)/main.o
+
+lib-dynyamically: $(OUTDIR)/DrawJob.o $(OUTDIR)/FillJob.o $(OUTDIR)/ViewBuffer.o $(OUTDIR)/View.o
+	$(GCC) -shared $(OUTDIR)/DrawJob.o $(OUTDIR)/FillJob.o $(OUTDIR)/View.o $(OUTDIR)/ViewBuffer.o -o $(OUTDIR)/lib$(LIBRARY).so
+
+all-dynamically: directories lib-dynamically $(OUTDIR)/main.o
+	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o -L$(OUTDIR) -l$(LIBRARY) $(FLAGS) 
+
+install-dynamically: directories lib-dynamically
+	sudo mv $(OUTDIR)/lib$(LIBRARY).so /usr/lib
+	sudo chmod 755 /usr/lib/lib$(LIBRARY).so
+

@@ -1,7 +1,6 @@
 #include "ViewBuffer.h"
 #include "idrawbuffer.h"
 #include "ifillbuffer.h"
-
 #include <stdlib.h>
 #include <iostream>
 
@@ -9,6 +8,7 @@ using namespace MyGraphicsOutput;
 using namespace std;
 
 namespace MyGraphicsOutput{
+
 class ViewBufferImpl: public IDrawBuffer, public IFillBuffer
 {
 public:
@@ -182,7 +182,6 @@ int ViewBufferImpl::GetHeight()
 ViewBuffer::ViewBuffer(int width, int height)
     : pimpl(new ViewBufferImpl(width, height))
 {
-
 }
 
 ViewBuffer::~ViewBuffer()
