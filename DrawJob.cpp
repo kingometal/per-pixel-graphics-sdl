@@ -1,5 +1,5 @@
-#include "drawjob.h"
-#include "idrawbuffer.h"
+#include "DrawJob.h"
+#include "Interfaces/IModel.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -32,7 +32,7 @@ void PrintRendererInfo(SDL_Renderer *renderer)
     if (drinfo.flags & SDL_RENDERER_TARGETTEXTURE) cout << " the  renderer supports rendering to texture" << endl;
 }
 
-bool Init(SDL_Window** window, SDL_Renderer **renderer, TTF_Font** font, int width, int height)
+bool Init(SDL_Window** window, SDL_Renderer **renderer, TTF_Font** font, int width, int height, bool resizable)
 {
     bool success = false;
     if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
@@ -55,7 +55,7 @@ bool Init(SDL_Window** window, SDL_Renderer **renderer, TTF_Font** font, int wid
             }
             else
             {
-                *window = SDL_CreateWindow( "Simple lightweight per-pixel drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+                *window = SDL_CreateWindow( "Simple lightweight per-pixel drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | (resizable?SDL_WINDOW_RESIZABLE:0));
                 if( window == NULL )
                 {
                     printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
@@ -111,25 +111,24 @@ void PrintText(SDL_Renderer* renderer, const char* text, SDL_Color& color, TTF_F
 } // anonymous namespace
 
 
-int MyGraphicsOutput::DrawJob(void* arg)
+int MyGraphicsOutput::DrawJob(int initialWidth, int initialHeight, IModel* model)
 {
-    IDrawBuffer* data = (IDrawBuffer*) arg;
-    int width = data->GetWidth();
-    int height = data->GetHeight();
+    int width = initialWidth;
+    int height = initialHeight;
+    int quitRequested = false;
     SDL_Window* gWindow = NULL;
     SDL_Renderer* renderer = NULL;
     TTF_Font* font = NULL;
-    if (Init(&gWindow, &renderer, &font, width, height))
+    if (Init(&gWindow, &renderer, &font, width, height, model->Resizable()))
     {
         SDL_Event e;
         unsigned int framecount = 0;
         double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
         double lastFPSOutputTime = secondsCounter;
         SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
-        RGBpixel* pixelDataBuffer = NULL;
 
         // Main Loop
-        while( !data->QuitRequested() )
+        while( !quitRequested )
         {
             secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
 
@@ -138,44 +137,28 @@ int MyGraphicsOutput::DrawJob(void* arg)
             {
                 if ((SDL_QUIT == e.type || (SDL_KEYDOWN == e.type && SDLK_q == e.key.keysym.sym) ))
                 {
-                    data->RequestQuit();
+                    quitRequested = true;
                 }
                 else if (SDL_WINDOWEVENT == e.type && e.window.event == SDL_WINDOWEVENT_RESIZED)
                 {
-//                    data->StartLog = true;
-                    data->WaitToFillBothBuffers();
                     SDL_GetWindowSize(gWindow, &width, &height);
                     std::cout << "RESIZE:    width :"  << width << " height: " << height << std::endl;
                     SDL_DestroyRenderer(renderer);
                     renderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_SOFTWARE);
-                    data->Resize(width, height);
+                    model->Resize(width, height);
                 }
-            }
-
-            width = data->GetWidth();
-            height = data->GetHeight();
-
-
-            if(!data->GetBufferToDraw(&pixelDataBuffer))
-            {
-                continue; // No new data to show.
             }
 
             // Fill Surface
-            int indexx = 0;
             for (unsigned int x = 0; x < width; x++)
             {
-                indexx = x*height;
                 for (unsigned int y = 0; y < height; y++)
                 {
-                    int index = indexx + y;
-                    SDL_SetRenderDrawColor(renderer, pixelDataBuffer[index].r, pixelDataBuffer[index].g, pixelDataBuffer[index].b, 255);
+                    RGBData rgbData = model->GetRGBData(x,y);
+                    SDL_SetRenderDrawColor(renderer, rgbData.R, rgbData.G, rgbData.B, rgbData.Brightness);
                     SDL_RenderDrawPoint(renderer, x, y);
                 }
             }
-            data->MarkBufferDrawn(&pixelDataBuffer);
-            pixelDataBuffer = NULL;
-
             PrintText(renderer, std::to_string(framecount/(secondsCounter - lastFPSOutputTime)).c_str(), fontColor, font, 0,0 );
 
             // reset FPS counter
@@ -188,6 +171,7 @@ int MyGraphicsOutput::DrawJob(void* arg)
 
             //Update the window
             SDL_RenderPresent(renderer);
+            model->Iterate();
         } // End main loop
     }
     DeInit(&gWindow, &renderer, &font);
