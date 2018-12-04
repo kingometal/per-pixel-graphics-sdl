@@ -1,26 +1,20 @@
 #ifndef DEMOMODEL_H
 #define DEMOMODEL_H
-#include "Interfaces/IModel.h"
+class IPresenter;
 
-class DemoModel: public IModel
+class DemoModel
 {
 public:
-    DemoModel();
+    DemoModel(int width, int height, IPresenter &presenter);
     ~DemoModel();
 
-    // IModel interface
-    bool Resizable();
-    bool BinaryDataAvailable();
-    bool RGBDataAvailable();
-    int GetWidth();
-    int GetHeight();
-    bool GetBinaryData(int x, int y);
-    RGBData GetRGBData(int x, int y);
     void Iterate();
-    void KeyPressed(KeyCode key);
-    bool Resize(int width, int height);
+    bool ItStopRequested();
 private:
     int Counter;
+    int Width;
+    int Height;
+    IPresenter& Presenter;
 };
 
 #endif // DEMOMODEL_H

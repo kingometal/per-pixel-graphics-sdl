@@ -1,13 +1,11 @@
-#include "DrawJob.h"
-#include "Interfaces/IModel.h"
+#include "DemoPresenter.h"
+#include <iostream>
+#include "Data/RGBData.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include <iostream>
-
 using namespace std;
 
-
-namespace
+namespace DemoPresenterFunctions
 {
 void PrintRendererInfo(SDL_Renderer *renderer)
 {
@@ -108,72 +106,83 @@ void PrintText(SDL_Renderer* renderer, const char* text, SDL_Color& color, TTF_F
         SDL_FreeSurface(surfaceMessage);
     }
 }
-} // anonymous namespace
+}
 
 
-int MyGraphicsOutput::DrawJob(int initialWidth, int initialHeight, IModel* model)
+class DemoPresenter::DemoPresenterImpl
 {
-    int width = initialWidth;
-    int height = initialHeight;
-    int quitRequested = false;
+public:
+    DemoPresenterImpl(int height, int width, bool resizable)
+    {
+        DemoPresenterFunctions::Init(&gWindow, &renderer, &font, width, height, resizable);
+        DemoPresenterFunctions::PrintRendererInfo(renderer);
+    }
+
+    ~DemoPresenterImpl()
+    {
+        DemoPresenterFunctions::DeInit(&gWindow, &renderer, &font);
+    }
+
+    void Draw(int x, int y, const RGBData& rgbData)
+    {
+        SDL_SetRenderDrawColor(renderer, rgbData.GetR(), rgbData.GetG(), rgbData.GetB(), rgbData.GetA());
+        SDL_RenderDrawPoint(renderer, x, y);
+    }
+
+    void Present()
+    {
+        SDL_Event e;
+        // Handle user input
+        while( SDL_PollEvent( &e ) != 0)
+        {
+            if ((SDL_QUIT == e.type || (SDL_KEYDOWN == e.type && SDLK_q == e.key.keysym.sym) ))
+            {
+                quitRequested = true;
+            }
+        }
+
+        SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
+        double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
+        DemoPresenterFunctions::PrintText(renderer, std::to_string(1/(secondsCounter - lastFPSOutputTime)).c_str(), fontColor, font, 0,0 );
+        lastFPSOutputTime = secondsCounter;
+
+        SDL_RenderPresent(renderer);
+    }
+
     SDL_Window* gWindow = NULL;
     SDL_Renderer* renderer = NULL;
     TTF_Font* font = NULL;
-    if (Init(&gWindow, &renderer, &font, width, height, model->Resizable()))
-    {
-        SDL_Event e;
-        unsigned int framecount = 0;
-        double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
-        double lastFPSOutputTime = secondsCounter;
-        SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
+    bool quitRequested = false;
 
-        // Main Loop
-        while( !quitRequested )
-        {
-            secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
+    double lastFPSOutputTime;
+};
 
-            // Handle user input
-            while( SDL_PollEvent( &e ) != 0)
-            {
-                if ((SDL_QUIT == e.type || (SDL_KEYDOWN == e.type && SDLK_q == e.key.keysym.sym) ))
-                {
-                    quitRequested = true;
-                }
-                else if (SDL_WINDOWEVENT == e.type && e.window.event == SDL_WINDOWEVENT_RESIZED)
-                {
-                    SDL_GetWindowSize(gWindow, &width, &height);
-                    std::cout << "RESIZE:    width :"  << width << " height: " << height << std::endl;
-                    SDL_DestroyRenderer(renderer);
-                    renderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_SOFTWARE);
-                    model->Resize(width, height);
-                }
-            }
+DemoPresenter::DemoPresenter()
+    : Pimpl(NULL)
+{
+}
 
-            // Fill Surface
-            for (unsigned int x = 0; x < width; x++)
-            {
-                for (unsigned int y = 0; y < height; y++)
-                {
-                    RGBData rgbData = model->GetRGBData(x,y);
-                    SDL_SetRenderDrawColor(renderer, rgbData.R, rgbData.G, rgbData.B, rgbData.Brightness);
-                    SDL_RenderDrawPoint(renderer, x, y);
-                }
-            }
-            PrintText(renderer, std::to_string(framecount/(secondsCounter - lastFPSOutputTime)).c_str(), fontColor, font, 0,0 );
+DemoPresenter::~DemoPresenter()
+{
+    delete Pimpl;
+}
 
-            // reset FPS counter
-            if (secondsCounter - lastFPSOutputTime > 1.0)
-            {
-                lastFPSOutputTime = secondsCounter;
-                framecount = 0;
-            }
-            ++framecount;
+void DemoPresenter::StoreRGBData(int x, int y, const RGBData &data)
+{
+    Pimpl->Draw(x, y, data);
+}
 
-            //Update the window
-            SDL_RenderPresent(renderer);
-            model->Iterate();
-        } // End main loop
-    }
-    DeInit(&gWindow, &renderer, &font);
-    return 0;
+void DemoPresenter::Present()
+{
+    Pimpl->Present();
+}
+
+bool DemoPresenter::QuitRequested()
+{
+    return Pimpl->quitRequested;
+}
+
+void DemoPresenter::Init(int height, int width, bool resizable)
+{
+    Pimpl = new DemoPresenterImpl(height, width, resizable);
 }

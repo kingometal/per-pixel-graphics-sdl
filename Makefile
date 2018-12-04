@@ -4,23 +4,28 @@ LIBRARY = per-pixel-graphics-view
 FLAGS = -std=c++11 -lSDL2 -lSDL2_ttf -fPIC
 GCC = g++
 INTERFACEFOLDER=Interfaces
-INTERFACEFILES=$(INTERFACEFOLDER)/IModel.h $(INTERFACEFOLDER)/KeyCodes.h $(INTERFACEFOLDER)/RGBData.h
+INTERFACEFILES=$(INTERFACEFOLDER)/IPresenter.h
+DATAFOLDER=Data
+DATAFILES=$(DATAFOLDER)/KeyCodes.h
 
 
 all: directories $(EXECUTABLE)
 
+$(EXECUTABLE): $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o
+	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(FLAGS)
 
-$(EXECUTABLE): $(OUTDIR)/DrawJob.o $(OUTDIR)/DemoModel.o $(OUTDIR)/main.o
-	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(OUTDIR)/DrawJob.o $(OUTDIR)/DemoModel.o $(FLAGS)
-
-$(OUTDIR)/main.o: main.cpp $(OUTDIR)/DrawJob.o $(OUTDIR)/DemoModel.o
+$(OUTDIR)/main.o: main.cpp DemoModel.h DemoPresenter.h $(INTERFACEFILES)
 	$(GCC) $(FLAGS) -c main.cpp -o $(OUTDIR)/main.o
 
 $(OUTDIR)/DemoModel.o: DemoModel.cpp DemoModel.h $(INTERFACEFILES)
 	$(GCC) $(FLAGS) -c DemoModel.cpp -o $(OUTDIR)/DemoModel.o
 
-$(OUTDIR)/DrawJob.o: DrawJob.cpp DrawJob.h $(INTERFACEFILES)
-	$(GCC) $(FLAGS) -c DrawJob.cpp -o $(OUTDIR)/DrawJob.o
+$(OUTDIR)/RGBData.o: $(DATAFOLDER)/RGBData.h $(DATAFOLDER)/RGBData.cpp
+	$(GCC) $(FLAGS) -c $(DATAFOLDER)/RGBData.cpp -o $(OUTDIR)/RGBData.o
+
+$(OUTDIR)/DemoPresenter.o: DemoPresenter.cpp DemoPresenter.h $(INTERFACEFILES)
+	$(GCC) $(FLAGS) -c DemoPresenter.cpp -o $(OUTDIR)/DemoPresenter.o
+
 
 directories: $(OUTDIR)
 
@@ -34,7 +39,9 @@ clean:
 	if [ -e $(EXECUTABLE) ]; then rm $(EXECUTABLE); fi
 	if [ -e lib$(LIBRARY).a ]; then rm lib$(LIBRARY).a; fi
 
+rebuild: clean all
 
-run: $(EXECUTABLE) FreeMono.ttf
+
+run: all FreeMono.ttf
 	./$(EXECUTABLE)
 

@@ -1,10 +1,10 @@
 DemoModel.cpp
 DemoModel.h
-DrawJob.cpp
-DrawJob.h
 IModel.h
-Interfaces/IModel.h
-Interfaces/KeyCodes.h
-Interfaces/RGBData.h
+DemoPresenter.cpp
+DemoPresenter.h
+Interfaces/IPresenter.h
+Data/RGBData.h
+Data/RGBData.cpp
 KeyCodes.h
 main.cpp
