@@ -25,3 +25,11 @@ i.e. the Model does not depend on the Presenter, but merely on an abstract inter
 The Presenter has to implement the interface.
 This makes the Presenter to a plugin.
 
+# Required libraries
+Under Ubuntu 18.04 LTE you need the following packages:
+`libsdl2-dev` `g++` `libsdl2-ttf-dev`
+
+# Usage
+The repository is developed on linux to run with the standard commands `make`, `make clean`, `make rebuild` and `make run`
+
+Once it is running, you can exit by closing the windows or pressing `q`
