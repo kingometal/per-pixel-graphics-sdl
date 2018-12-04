@@ -11,10 +11,10 @@ DATAFILES=$(DATAFOLDER)/KeyCodes.h
 
 all: directories $(EXECUTABLE)
 
-$(EXECUTABLE): $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o
-	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(FLAGS)
+$(EXECUTABLE): $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o
+	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o $(FLAGS)
 
-$(OUTDIR)/main.o: main.cpp DemoModel.h DemoPresenter.h $(INTERFACEFILES)
+$(OUTDIR)/main.o: main.cpp DemoModel.h DemoPresenter.h UserInput.h $(INTERFACEFILES)
 	$(GCC) $(FLAGS) -c main.cpp -o $(OUTDIR)/main.o
 
 $(OUTDIR)/DemoModel.o: DemoModel.cpp DemoModel.h $(INTERFACEFILES)
@@ -25,6 +25,9 @@ $(OUTDIR)/RGBData.o: $(DATAFOLDER)/RGBData.h $(DATAFOLDER)/RGBData.cpp
 
 $(OUTDIR)/DemoPresenter.o: DemoPresenter.cpp DemoPresenter.h $(INTERFACEFILES)
 	$(GCC) $(FLAGS) -c DemoPresenter.cpp -o $(OUTDIR)/DemoPresenter.o
+
+$(OUTDIR)/UserInput.o: UserInput.h UserInput.cpp
+	$(GCC) $(FLAGS) -c UserInput.cpp -o $(OUTDIR)/UserInput.o
 
 
 directories: $(OUTDIR)

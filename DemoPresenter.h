@@ -11,7 +11,6 @@ public:
     // IPresenter interface
     void StoreRGBData(int x, int y, const RGBData &data);
     void Present();
-    bool QuitRequested();
     void Init(int height, int width, bool resizable);
 private:
     class DemoPresenterImpl;

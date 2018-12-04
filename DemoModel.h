@@ -9,12 +9,9 @@ public:
     ~DemoModel();
 
     void Iterate();
-    bool ItStopRequested();
 private:
-    int Counter;
-    int Width;
-    int Height;
-    IPresenter& Presenter;
+    class ModelImpl;
+    ModelImpl* Pimpl;
 };
 
 #endif // DEMOMODEL_H
