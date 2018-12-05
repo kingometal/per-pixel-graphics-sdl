@@ -5,7 +5,12 @@ class IPresenter;
 class DemoModel
 {
 public:
-    DemoModel(int width, int height, IPresenter &presenter);
+    enum ModelType
+    {
+        Default,
+        Waves
+    };
+    DemoModel(int width, int height, IPresenter &presenter, ModelType type);
     ~DemoModel();
 
     void Iterate();

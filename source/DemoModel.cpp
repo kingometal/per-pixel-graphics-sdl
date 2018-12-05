@@ -4,27 +4,66 @@
 #include <iostream>
 #include <cmath>
 
+namespace {
+class ModelDataProvider
+{
+public:
+    ModelDataProvider() = default;
+    virtual RGBData GetRGBData(int x, int y, int counter) = 0;
+};
+
+class WaveModelDataProvider: public ModelDataProvider
+{
+public:
+    WaveModelDataProvider()
+    {
+        std::cout << "creating wave model" << std::endl;
+    }
+    RGBData GetRGBData(int x, int y, int counter)
+    {
+        double RAmplitude = 1 + sin(sqrt(x*x + y*y)*0.1 - counter);
+        return RGBData(RAmplitude * 127, RAmplitude * 127, RAmplitude * 127, RAmplitude * 127);
+    }
+};
+
+class DefaultModelDataProvider: public ModelDataProvider
+{
+public:
+    DefaultModelDataProvider()
+    {
+        std::cout << "creating default model" << std::endl;
+    }
+    RGBData GetRGBData(int x, int y, int counter)
+    {
+        return RGBData((x+counter)%255, counter % 255, (y+counter) % 255, 255);
+    }
+};
+}
+
 class DemoModel::ModelImpl{
 public:
-    ModelImpl(int width, int height, IPresenter& presenter)
+    ModelImpl(int width, int height, IPresenter& presenter, DemoModel::ModelType type)
         : Counter(0)
         , Width(width)
         , Height(height)
         , Presenter(presenter)
+        , DataProvider(NULL)
     {
+        switch (type)
+        {
+        case DemoModel::Default:
+            DataProvider = new DefaultModelDataProvider();
+            break;
+        case DemoModel::Waves:
+            DataProvider = new WaveModelDataProvider();
+            break;
+        }
         Presenter.Init(height, width, false);
     }
 
-    RGBData GetRGBData(int x, int y)
+    ~ModelImpl()
     {
-
-	int x2 = (320-x)*(320-x);
-	int mx2 = (280-x)*(280-x);
-	int y2 = y*y;
-	double Amplitude1 = sin(sqrt(x2 + y2)*0.1 - Counter);
-        double Amplitude2 = sin(sqrt(mx2 + y2)*0.1 - Counter);
-	double RAmplitude = 1.0 + (Amplitude1 + Amplitude2)/2.0;
-        return RGBData(RAmplitude * 127, RAmplitude * 127, RAmplitude * 127, RAmplitude * 127);
+        delete DataProvider;
     }
 
     void Iterate()
@@ -34,20 +73,21 @@ public:
         {
             for (int y = 0; y < Height; ++y)
             {
-                Presenter.StoreRGBData(x,y, GetRGBData(x,y));
+                Presenter.StoreRGBData(x,y, DataProvider->GetRGBData(x, y, Counter));
             }
         }
         Presenter.Present();
     }
 
+    ModelDataProvider* DataProvider;
     int Counter;
     int Width;
     int Height;
     IPresenter& Presenter;
 };
 
-DemoModel::DemoModel(int width, int height, IPresenter& presenter)
-    : Pimpl(new ModelImpl(width, height, presenter))
+DemoModel::DemoModel(int width, int height, IPresenter& presenter, ModelType type)
+    : Pimpl(new ModelImpl(width, height, presenter, type))
 {
 }
 

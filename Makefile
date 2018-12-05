@@ -8,16 +8,19 @@ SOURCEDIR=source
 INTERFACEFOLDER=Interfaces
 INTERFACEFILES=$(INTERFACEFOLDER)/IPresenter.h
 DATAFOLDER=Data
-DATAFILES=$(DATAFOLDER)/KeyCodes.h
+DATAFILES=$(DATAFOLDER)/RGBData.h
 
 
 all: directories $(EXECUTABLE)
 
-$(EXECUTABLE): $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o
-	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o $(FLAGS)
+$(EXECUTABLE): $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o $(OUTDIR)/RandomWalkModel.o
+	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o $(OUTDIR)/RandomWalkModel.o $(FLAGS)
 
-$(OUTDIR)/main.o: $(SOURCEDIR)/main.cpp $(SOURCEDIR)/DemoModel.h $(SOURCEDIR)/DemoPresenter.h $(SOURCEDIR)/UserInput.h $(SOURCEDIR)/$(INTERFACEFILES)
+$(OUTDIR)/main.o: $(SOURCEDIR)/main.cpp $(SOURCEDIR)/DemoModel.h $(SOURCEDIR)/DemoPresenter.h $(SOURCEDIR)/UserInput.h $(SOURCEDIR)/RandomWalkModel.h $(SOURCEDIR)/$(INTERFACEFILES)
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/main.cpp -o $(OUTDIR)/main.o
+
+$(OUTDIR)/RandomWalkModel.o: $(SOURCEDIR)/RandomWalkModel.cpp $(SOURCEDIR)/RandomWalkModel.h $(SOURCEDIR)/$(INTERFACEFILES) $(SOURCEDIR)/$(DATAFILES)
+	$(GCC) $(FLAGS) -c $(SOURCEDIR)/RandomWalkModel.cpp -o $(OUTDIR)/RandomWalkModel.o
 
 $(OUTDIR)/DemoModel.o: $(SOURCEDIR)/DemoModel.cpp $(SOURCEDIR)/DemoModel.h $(SOURCEDIR)/$(INTERFACEFILES)
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/DemoModel.cpp -o $(OUTDIR)/DemoModel.o
