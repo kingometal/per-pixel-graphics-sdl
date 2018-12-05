@@ -1,5 +1,6 @@
 *.x
 *.creator.user
+*.swp
 build
 # Prerequisites
 *.d
