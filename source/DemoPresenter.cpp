@@ -116,7 +116,8 @@ public:
 
     void PrintText(SDL_Renderer* renderer, const char* text, SDL_Color& color, TTF_Font* font, int x, int y)
     {
-        SDL_Surface* surfaceMessage = TTF_RenderText_Solid(font, text, color); // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
+        SDL_Color backgroundColor {0,0,0,0};
+        SDL_Surface* surfaceMessage = TTF_RenderText(font, text, color, backgroundColor); // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
         if (surfaceMessage)
         {
             SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage); //now you can convert it into a texture
