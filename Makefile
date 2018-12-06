@@ -13,8 +13,8 @@ DATAFILES=$(DATAFOLDER)/RGBData.h
 
 all: directories $(EXECUTABLE)
 
-$(EXECUTABLE): $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o $(OUTDIR)/RandomWalkModel.o
-	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o $(OUTDIR)/RandomWalkModel.o $(FLAGS)
+$(EXECUTABLE): $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o $(OUTDIR)/RandomWalkModel.o $(OUTDIR)/BallModel.o
+	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(OUTDIR)/DemoModel.o $(OUTDIR)/RGBData.o $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o $(OUTDIR)/RandomWalkModel.o $(OUTDIR)/BallModel.o $(FLAGS)
 
 $(OUTDIR)/main.o: $(SOURCEDIR)/main.cpp $(SOURCEDIR)/DemoModel.h $(SOURCEDIR)/DemoPresenter.h $(SOURCEDIR)/UserInput.h $(SOURCEDIR)/RandomWalkModel.h $(SOURCEDIR)/$(INTERFACEFILES)
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/main.cpp -o $(OUTDIR)/main.o
@@ -24,6 +24,9 @@ $(OUTDIR)/RandomWalkModel.o: $(SOURCEDIR)/RandomWalkModel.cpp $(SOURCEDIR)/Rando
 
 $(OUTDIR)/DemoModel.o: $(SOURCEDIR)/DemoModel.cpp $(SOURCEDIR)/DemoModel.h $(SOURCEDIR)/$(INTERFACEFILES)
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/DemoModel.cpp -o $(OUTDIR)/DemoModel.o
+
+$(OUTDIR)/BallModel.o: $(SOURCEDIR)/BallModel.cpp $(SOURCEDIR)/BallModel.h $(SOURCEDIR)/$(INTERFACEFILES)
+	$(GCC) $(FLAGS) -c $(SOURCEDIR)/BallModel.cpp -o $(OUTDIR)/BallModel.o
 
 $(OUTDIR)/RGBData.o: $(SOURCEDIR)/$(DATAFOLDER)/RGBData.h $(SOURCEDIR)/$(DATAFOLDER)/RGBData.cpp
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/$(DATAFOLDER)/RGBData.cpp -o $(OUTDIR)/RGBData.o

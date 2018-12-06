@@ -1,9 +1,9 @@
 #ifndef RANDOMWALKMODEL_H
 #define RANDOMWALKMODEL_H
-
+#include "Interfaces/IModel.h"
 class IPresenter;
 
-class RandomWalkModel
+class RandomWalkModel: public IModel
 {
 public:
     RandomWalkModel(int width, int height, IPresenter &presenter);

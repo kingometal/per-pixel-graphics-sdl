@@ -1,8 +1,9 @@
 #ifndef DEMOMODEL_H
 #define DEMOMODEL_H
+#include "Interfaces/IModel.h"
 class IPresenter;
 
-class DemoModel
+class DemoModel: public IModel
 {
 public:
     enum ModelType

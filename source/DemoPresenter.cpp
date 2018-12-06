@@ -25,14 +25,17 @@ public:
         SDL_RenderDrawPoint(renderer, x, y);
     }
 
-    void Present()
+    void Present(int maxFps)
     {
         SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
         double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
-        PrintText(renderer, std::to_string(1/(secondsCounter - lastFPSOutputTime)).c_str(), fontColor, font, 0,0 );
-        lastFPSOutputTime = secondsCounter;
-
-        SDL_RenderPresent(renderer);
+        if (maxFps == 0 || secondsCounter - lastFPSOutputTime > 0.01)
+        {
+            int fps = 1/(secondsCounter - lastFPSOutputTime);
+            PrintText(renderer, std::to_string(fps).c_str(), fontColor, font, 0,0 );
+            SDL_RenderPresent(renderer);
+            lastFPSOutputTime = secondsCounter;
+        }
     }
 
     void PrintRendererInfo(SDL_Renderer *renderer)
@@ -158,9 +161,9 @@ void DemoPresenter::StoreRGBData(int x, int y, const RGBData &data)
     Pimpl->Draw(x, y, data);
 }
 
-void DemoPresenter::Present()
+void DemoPresenter::Present(int maxFps)
 {
-    Pimpl->Present();
+    Pimpl->Present(maxFps);
 }
 
 void DemoPresenter::Init(int height, int width, bool resizable)

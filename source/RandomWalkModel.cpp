@@ -37,9 +37,5 @@ void RandomWalkModel::Iterate()
     Color = (Color + 1) % 255;
     RGBData color (Color, Color, Color, 255);
     Presenter.StoreRGBData(X, Y, color);
-    if (SkipFrames++ > 1000)
-    {
-        SkipFrames = 0;
-        Presenter.Present();
-    }
+    Presenter.Present();
 }
