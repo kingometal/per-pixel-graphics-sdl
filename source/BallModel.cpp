@@ -53,7 +53,7 @@ BallModel::BallModel(int width, int height, IPresenter &presenter)
         double angle = (i/(double) NumBalls)*(2*M_PI);
         int x = width/2 + width/3 * cos(angle);
         int y = height/2 + height/3 * sin(angle);
-        Balls[i] = new Ball(x, y, 0.5*(2.5 - rand()%5), 0.5*(2.5 - rand()%5), 10);
+        Balls[i] = new Ball(x, y, 0.5*(2 - rand()%5), 0.5*(2 - rand()%5), 10);
     }
     Presenter.Init(Width, Height, false);
     LastUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
