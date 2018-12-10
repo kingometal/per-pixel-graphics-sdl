@@ -2,7 +2,8 @@ EXECUTABLE=per-pixel-graphics.x
 OUTDIR = build
 LIBRARY = per-pixel-graphics-view
 LIBDIR = libs
-FLAGS = -std=c++11 -lSDL2 -lSDL2_ttf -fPIC
+FLAGS = -std=c++11 -lSDL2 -lSDL2_ttf
+FLAGS_COMPILE = -fPIC
 GCC = g++
 
 SOURCEDIR=source
@@ -35,10 +36,10 @@ $(OUTDIR)/RGBData.o: $(SOURCEDIR)/$(DATAFOLDER)/RGBData.h $(SOURCEDIR)/$(DATAFOL
 	$(GCC) -c $(SOURCEDIR)/$(DATAFOLDER)/RGBData.cpp -o $(OUTDIR)/RGBData.o
 
 $(OUTDIR)/DemoPresenter.o: $(SOURCEDIR)/DemoPresenter.cpp $(SOURCEDIR)/DemoPresenter.h $(SOURCEDIR)/$(INTERFACEFILES)
-	$(GCC) -c $(SOURCEDIR)/DemoPresenter.cpp -o $(OUTDIR)/DemoPresenter.o
+	$(GCC) -c $(SOURCEDIR)/DemoPresenter.cpp -o $(OUTDIR)/DemoPresenter.o $(FLAGS_COMPILE)
 
 $(OUTDIR)/UserInput.o: $(SOURCEDIR)/UserInput.h $(SOURCEDIR)/UserInput.cpp
-	$(GCC) -c $(SOURCEDIR)/UserInput.cpp -o $(OUTDIR)/UserInput.o
+	$(GCC) -c $(SOURCEDIR)/UserInput.cpp -o $(OUTDIR)/UserInput.o $(FLAGS_COMPILE)
 
 
 directories: $(SOURCEDIR) $(OUTDIR)
@@ -71,17 +72,17 @@ exe-stat: lib-stat $(OUTDIR)/main.o
 	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o -l$(LIBRARY) -L. $(FLAGS) 
 	rm $(OUTDIR)/main.o
 
-$(LIBDIR)/Presenter.so: $(LIBDIR) $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o
+$(LIBDIR)/libPresenter.so: $(LIBDIR) $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o
 	$(GCC) -shared $(OUTDIR)/DemoPresenter.o $(OUTDIR)/UserInput.o -o $(LIBDIR)/libPresenter.so
 
 $(LIBDIR)/libDataTypes.so: $(LIBDIR) $(OUTDIR)/RGBData.o
 	$(GCC) -shared $(OUTDIR)/RGBData.o -o $(LIBDIR)/libDataTypes.so
 
-all-dynamic: directories $(LIBDIR)/Presenter.so $(OUTDIR)/main.o $(MODELS) $(LIBDIR)/libDataTypes.so $(MODELS)
+all-dynamic: directories $(LIBDIR)/libPresenter.so $(OUTDIR)/main.o $(MODELS) $(LIBDIR)/libDataTypes.so $(MODELS)
 	$(GCC) -o $(EXECUTABLE) $(OUTDIR)/main.o $(MODELS) -L$(LIBDIR) -lPresenter -lDataTypes $(FLAGS) 
 
 run-dynamic: all-dynamic FreeMono.ttf
 	LD_LIBRARY_PATH=./${LIBDIR}:${LD_LIBRARY_PATH} ./$(EXECUTABLE) $(filter-out $@, $(MAKECMDGOALS))
 
-install-dynamic: directories all-dynamic
+install-dynamic: directories $(LIBDIR)/libDataTypes.so $(LIBDIR)/libPresenter.so
 	cp ./${LIBDIR}/* ~/lib

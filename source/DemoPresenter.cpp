@@ -1,6 +1,6 @@
 #include "DemoPresenter.h"
-#include <iostream>
 #include "Data/RGBData.h"
+#include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 using namespace std;
@@ -92,7 +92,7 @@ public:
                     else
                     {
                         *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_SOFTWARE);
-                        //                    *renderer = SDL_CreateRenderer(*window, -1, 0);
+                        //*renderer = SDL_CreateRenderer(*window, -1, 0);
                         if (NULL == renderer)
                         {
                             printf( "Can not get surface! SDL_Error: %s\n", SDL_GetError() );
@@ -169,4 +169,9 @@ void DemoPresenter::Present(int maxFps)
 void DemoPresenter::Init(int height, int width, bool resizable)
 {
     Pimpl = new DemoPresenterImpl(height, width, resizable);
+}
+
+void DemoPresenter::ClearWindow(RGBData &color)
+{
+
 }
